@@ -48,26 +48,58 @@ export function DailyLogView({ appData, updateAppData }: Props) {
             <span className="text-slate-500 text-sm font-medium">{expanded.summary ? 'Collapse' : 'Expand'}</span>
           </button>
           {expanded.summary && (
-            <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
-              <textarea
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 min-h-[120px] transition-all"
-                placeholder="How was your day? What did you feel today?"
-                value={appData.daily_logs[dateStr]?.summary || ''}
-                onChange={(e) => {
-                  const summary = e.target.value;
-                  updateAppData(prev => ({
-                    ...prev,
-                    daily_logs: {
-                      ...prev.daily_logs,
-                      [dateStr]: {
-                        ...prev.daily_logs[dateStr],
-                        date: dateStr,
-                        summary
-                      }
-                    }
-                  }));
-                }}
-              />
+            <div className="p-5 border-t border-slate-700/50 bg-slate-800/50 space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Daily Experience Reflection</label>
+                  <textarea
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-slate-300 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 min-h-[120px] transition-all"
+                    placeholder="How was your day? What did you feel today?"
+                    value={appData.daily_logs[dateStr]?.summary || ''}
+                    onChange={(e) => {
+                      const summary = e.target.value;
+                      updateAppData(prev => ({
+                        ...prev,
+                        daily_logs: {
+                          ...prev.daily_logs,
+                          [dateStr]: {
+                            ...prev.daily_logs[dateStr],
+                            date: dateStr,
+                            summary
+                          }
+                        }
+                      }));
+                    }}
+                  />
+                </div>
+                <div className="w-full md:w-32 flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-2xl border border-slate-700/50">
+                  <label className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-2">Day Score</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    className="w-full bg-transparent text-center text-3xl font-black text-white outline-none"
+                    placeholder="0.0"
+                    value={appData.daily_logs[dateStr]?.day_score || ''}
+                    onChange={(e) => {
+                      const day_score = parseFloat(e.target.value);
+                      updateAppData(prev => ({
+                        ...prev,
+                        daily_logs: {
+                          ...prev.daily_logs,
+                          [dateStr]: {
+                            ...prev.daily_logs[dateStr],
+                            date: dateStr,
+                            day_score: isNaN(day_score) ? undefined : day_score
+                          }
+                        }
+                      }));
+                    }}
+                  />
+                  <div className="text-[10px] font-bold text-slate-500 mt-1">out of 10</div>
+                </div>
+              </div>
             </div>
           )}
         </div>

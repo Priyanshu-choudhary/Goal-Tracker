@@ -53,7 +53,7 @@ export function Todo({ appData, updateAppData }: Props) {
         const createdAt = new Date().toISOString();
 
         const task: TodoTask = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: Math.random().toString(36).substring(2, 11),
             title,
             completed: false,
             failed: false,
@@ -66,6 +66,7 @@ export function Todo({ appData, updateAppData }: Props) {
         };
         updateAppData(prev => ({ ...prev, todo_tasks: [task, ...(prev.todo_tasks || [])] }));
         setNewTitle('');
+        setFilter('all');
     };
 
     const handleCreateGoal = () => {
@@ -304,14 +305,38 @@ export function Todo({ appData, updateAppData }: Props) {
         });
     };
 
-    const updateGoalDailyNote = (goalId: string, note: string) => {
+    const updateGoalDailyNote = (goal_id: string, note: string) => {
         updateAppData(prev => {
             const logs = [...(prev.goal_daily_logs || [])];
-            const idx = logs.findIndex(l => l.goal_id === goalId && l.date === goalLogDate);
+            const idx = logs.findIndex(l => l.goal_id === goal_id && l.date === goalLogDate);
             if (idx >= 0) {
                 logs[idx] = { ...logs[idx], note };
             } else {
-                logs.push({ goal_id: goalId, date: goalLogDate, worked: false, note });
+                logs.push({ goal_id, date: goalLogDate, worked: false, note });
+            }
+            return { ...prev, goal_daily_logs: logs };
+        });
+    };
+
+    const toggleRoutine = (goalId: string, routineId: string) => {
+        updateAppData(prev => {
+            const logs = [...(prev.goal_daily_logs || [])];
+            const idx = logs.findIndex(l => l.goal_id === goalId && l.date === goalLogDate);
+            
+            if (idx >= 0) {
+                const current = logs[idx].completed_routines || [];
+                const next = current.includes(routineId) 
+                    ? current.filter(id => id !== routineId)
+                    : [...current, routineId];
+                logs[idx] = { ...logs[idx], completed_routines: next, worked: next.length > 0 ? true : logs[idx].worked };
+            } else {
+                logs.push({ 
+                    goal_id: goalId, 
+                    date: goalLogDate, 
+                    worked: true, 
+                    note: '', 
+                    completed_routines: [routineId] 
+                });
             }
             return { ...prev, goal_daily_logs: logs };
         });
@@ -693,6 +718,44 @@ export function Todo({ appData, updateAppData }: Props) {
                                         </div>
 
                                         <div className="mb-6 p-5 bg-slate-900/50 border border-slate-700 rounded-[1.5rem] space-y-4">
+                                            {goal.daily_routines && goal.daily_routines.length > 0 && (
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest ml-1">Daily Routines</span>
+                                                        <span className="text-[10px] font-black text-slate-500 uppercase">
+                                                            {(dayLog?.completed_routines || []).length} / {goal.daily_routines.length}
+                                                        </span>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        {goal.daily_routines.map(routine => {
+                                                            const isDone = (dayLog?.completed_routines || []).includes(routine.id);
+                                                            return (
+                                                                <button 
+                                                                    key={routine.id}
+                                                                    onClick={() => toggleRoutine(goal.id, routine.id)}
+                                                                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                                                                        isDone 
+                                                                        ? 'bg-purple-600/20 border-purple-500/50 text-purple-200' 
+                                                                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                                                                    }`}
+                                                                >
+                                                                    <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${isDone ? 'bg-purple-500 border-purple-400' : 'bg-slate-800 border-slate-700'}`}>
+                                                                        {isDone && <CheckCircle className="w-3 h-3 text-white" />}
+                                                                    </div>
+                                                                    <span className="text-xs font-bold">{routine.title}</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <div className="h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-purple-500 transition-all duration-500" 
+                                                            style={{ width: `${(dayLog?.completed_routines?.length || 0) / goal.daily_routines.length * 100}%` }} 
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <div className="flex items-center justify-between gap-3">
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Worked on {goalLogDate}?</span>
                                                 <div className="flex gap-1 p-1 bg-slate-900 rounded-xl border border-slate-700 shadow-inner">

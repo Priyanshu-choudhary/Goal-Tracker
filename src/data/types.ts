@@ -3,6 +3,7 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export interface UserSettings {
   accentColor: 'blue' | 'green' | 'purple';
+  challenge_start_date?: string; // YYYY-MM-DD
 }
 
 export interface SleepLog {
@@ -19,6 +20,7 @@ export interface DailyLog {
   sleep_time?: string; // HH:mm (Legacy)
   energy_morning?: number; // 1-5
   summary?: string; // Short summary of the day
+  day_score?: number; // 0-10
   sleep_logs?: SleepLog[];
 }
 
@@ -64,11 +66,18 @@ export interface Milestone {
   completed: boolean;
 }
 
+export interface GoalDailyRoutine {
+  id: string;
+  title: string;
+}
+
 export interface Goal {
   id: string;
   skill_id: string;
   title: string;
   milestones: Milestone[];
+  daily_routines?: GoalDailyRoutine[];
+  action_plan_md?: string;
   progress_percent: number;
   manual_progress?: boolean;
 }
@@ -168,6 +177,7 @@ export interface GoalDailyLog {
   date: string;
   worked: boolean;
   note: string;
+  completed_routines?: string[]; // IDs of GoalDailyRoutine
 }
 
 export interface AppData {

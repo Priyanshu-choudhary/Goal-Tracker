@@ -5,8 +5,9 @@ import { format, subDays, parseISO, isToday, addDays, differenceInMinutes, parse
 import { 
   BarChart2, Activity, BrainCircuit, Download, Calendar, 
   ChevronLeft, ChevronRight, CheckCircle, XCircle, Target, 
-  Clock, Utensils, BookOpen, Zap, Droplets, Dumbbell
+  Clock, Utensils, BookOpen, Zap, Droplets, Dumbbell, Info
 } from 'lucide-react';
+import { ContinuityGraph } from './modules/ContinuityGraph';
 
 interface Props {
   appData: AppData;
@@ -50,6 +51,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
         fullDate: dateStr,
         energy: sleep?.energy_morning || health?.energy_afternoon || 0,
         mood: health?.mood_score || 0,
+        dayScore: sleep?.day_score || 0,
         studyHours: Math.round((studyMins / 60) * 10) / 10,
         tasks: completedCount
       });
@@ -106,11 +108,17 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
         day_sections: appData.day_sections.filter(s => s.date === dateStr),
         food_logs: dayMeals,
         study_sessions: dayStudy,
-        long_term_goals: dayGoalLogs.map(l => ({
-            ...l,
-            goal_name: appData.goals.find(g => g.id === l.goal_id)?.title || "Unknown Goal"
-        })),
-        todo_tasks: dayTasks
+        long_term_goals: dayGoalLogs.map(l => {
+            const fullGoal = appData.goals.find(g => g.id === l.goal_id);
+            return {
+                ...l,
+                goal_name: fullGoal?.title || "Unknown Goal",
+                goal_details: fullGoal || null, // Include full definition (milestones, action plan, etc)
+            };
+        }),
+        todo_tasks: dayTasks,
+        all_goals_definitions: appData.goals, // Full context of all goals
+        all_skills: appData.skills // Full context for skill IDs
       },
       summary_metrics: {
         total_sleep_duration: `${Math.floor(sleepMins / 60)}h ${sleepMins % 60}m`,
@@ -152,6 +160,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
     const sleepMins = calculateSleepMinutes(dateStr);
     const health = appData.health_logs[dateStr];
     const totalCals = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+    const dayLog = appData.daily_logs[dateStr];
 
     return {
       studyMins,
@@ -162,7 +171,8 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
       sleepMins,
       waterMl: health?.water_intake || 0,
       didExercise: health?.did_exercise,
-      calories: totalCals
+      calories: totalCals,
+      dayScore: dayLog?.day_score || 0
     };
   }, [appData, selectedDate]);
 
@@ -211,10 +221,52 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
                 <Download className="w-5 h-5" /> EXPORT JSON
             </button>
         </div>
-      </div>
+        </div>
 
-      {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Continuity Matrix */}
+        <ContinuityGraph appData={appData} selectedDate={selectedDate} />
+
+        {/* Primary Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* Day Score Card */}
+        <div className="p-6 bg-slate-800 border border-slate-700 rounded-[2rem] shadow-lg group/score relative hover:border-yellow-500/50 transition-all cursor-help">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-2 bg-yellow-500/10 text-yellow-400 rounded-lg"><Zap className="w-5 h-5" /></div>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Performance</span>
+              <Info className="w-3.5 h-3.5 text-slate-600 group-hover/score:text-yellow-500 transition-colors" />
+            </div>
+          </div>
+          
+          {/* Matrix Tooltip */}
+          <div className="absolute top-full left-0 mt-4 w-72 p-4 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all z-50 pointer-events-none scale-95 group-hover/score:scale-100 origin-top-left">
+            <h4 className="text-xs font-black text-yellow-500 uppercase tracking-widest mb-3 border-b border-slate-800 pb-2">Score Matrix Guide</h4>
+            <div className="space-y-3">
+              <div className="flex gap-2.5">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 h-fit">9–10</span>
+                <p className="text-[10px] leading-relaxed text-slate-300"><span className="font-bold text-white">Elite Day:</span> All 4 goals hit, slept before 12:30, no time leaks. (Rare, target 2-3x/week)</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/20 h-fit">8–8.5</span>
+                <p className="text-[10px] leading-relaxed text-slate-300"><span className="font-bold text-white">Good Day:</span> 3 goals fully done, one partially. Your standard target.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-700 text-slate-400 h-fit">7–7.5</span>
+                <p className="text-[10px] leading-relaxed text-slate-300"><span className="font-bold text-white">Acceptable:</span> Worked, missed one goal. Don't let it become a trend.</p>
+              </div>
+              <div className="flex gap-2.5 pt-1 border-t border-slate-800">
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-red-500/20 text-red-500 border border-red-500/20 h-fit">{"<"} 6</span>
+                <p className="text-[10px] leading-relaxed text-red-400"><span className="font-bold">Red Flag:</span> Late-night slip or full goal skipped. Max 4-5 per 40 days.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-3xl font-black text-white">
+            {selectedDateStats.dayScore}<span className="text-lg text-slate-500 ml-1">/10</span>
+          </div>
+          <p className="text-xs text-slate-500 font-bold mt-2 uppercase tracking-tighter">Day Score</p>
+        </div>
+
         {/* Productivity Card */}
         <div className="p-6 bg-slate-800 border border-slate-700 rounded-[2rem] shadow-lg group hover:border-blue-500/50 transition-all">
           <div className="flex items-center justify-between mb-4">
@@ -307,6 +359,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'black', textTransform: 'uppercase', paddingTop: '20px' }} />
                 <Line type="monotone" dataKey="studyHours" name="Study" stroke="#3b82f6" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} activeDot={{ r: 8 }} />
                 <Line type="monotone" dataKey="tasks" name="Tasks" stroke="#22c55e" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
+                <Line type="monotone" dataKey="dayScore" name="Day Score" stroke="#eab308" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
                 <Line type="monotone" dataKey="mood" name="Mood" stroke="#ec4899" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
               </LineChart>
             </ResponsiveContainer>
