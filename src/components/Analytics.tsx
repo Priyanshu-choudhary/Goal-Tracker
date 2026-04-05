@@ -8,6 +8,7 @@ import {
   Clock, Utensils, BookOpen, Zap, Droplets, Dumbbell, Info
 } from 'lucide-react';
 import { ContinuityGraph } from './modules/ContinuityGraph';
+import { StaticWeekReport } from './modules/StaticWeekReport';
 
 interface Props {
   appData: AppData;
@@ -30,12 +31,33 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
     }).filter(d => d.hours > 0).sort((a, b) => b.hours - a.hours);
   }, [appData]);
 
-  // Weekly Trend Data
-  const weeklyData = useMemo(() => {
+  // All Time Trend Data
+  const allTimeData = useMemo(() => {
+    // Collect all dates from various logs
+    const allDates = [
+      ...Object.keys(appData.daily_logs || {}),
+      ...Object.keys(appData.health_logs || {}),
+      ...(appData.study_sessions || []).map(s => s.date),
+      ...(appData.todo_tasks || []).map(t => t.createdAt?.split('T')[0]).filter(Boolean),
+    ].filter(Boolean) as string[];
+
+    let startDate = parseISO(selectedDate);
+    if (allDates.length > 0) {
+      allDates.sort();
+      const firstRecord = parseISO(allDates[0]);
+      if (firstRecord < startDate) {
+        startDate = firstRecord;
+      }
+    } else {
+      startDate = subDays(parseISO(selectedDate), 6);
+    }
+
     const data = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = subDays(parseISO(selectedDate), i);
-      const dateStr = format(d, 'yyyy-MM-dd');
+    const endDate = parseISO(selectedDate);
+    let currentDate = startDate;
+    
+    while (currentDate <= endDate) {
+      const dateStr = format(currentDate, 'yyyy-MM-dd');
       
       const health = appData.health_logs[dateStr];
       const sleep = appData.daily_logs[dateStr];
@@ -47,17 +69,41 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
       const completedCount = dayTasks.filter(t => t.completed).length;
 
       data.push({
-        name: format(d, 'EEE'),
+        name: format(currentDate, 'MMM d'),
         fullDate: dateStr,
         energy: sleep?.energy_morning || health?.energy_afternoon || 0,
         mood: health?.mood_score || 0,
         dayScore: sleep?.day_score || 0,
+        lcSolved: sleep?.lc_solved || 0,
         studyHours: Math.round((studyMins / 60) * 10) / 10,
         tasks: completedCount
       });
+      
+      currentDate = addDays(currentDate, 1);
     }
     return data;
   }, [appData, selectedDate]);
+
+  const { avgDayScore, avgStudyHours } = useMemo(() => {
+    if (allTimeData.length === 0) return { avgDayScore: "0.0", avgStudyHours: "0.0" };
+    
+    let totalScore = 0;
+    let scoreCount = 0;
+    let totalStudy = 0;
+
+    allTimeData.forEach(d => {
+      if (d.dayScore > 0) {
+        totalScore += d.dayScore;
+        scoreCount++;
+      }
+      totalStudy += (d.studyHours || 0);
+    });
+
+    const avgScoreStr = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : "0.0";
+    const avgStudyStr = (totalStudy / allTimeData.length).toFixed(1);
+
+    return { avgDayScore: avgScoreStr, avgStudyHours: avgStudyStr };
+  }, [allTimeData]);
 
   // Helper for Sleep Duration
   const calculateSleepMinutes = (dateStr: string) => {
@@ -162,6 +208,8 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
     const totalCals = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
     const dayLog = appData.daily_logs[dateStr];
 
+    const allTimeLC = Object.values(appData.daily_logs).reduce((sum, log) => sum + (log.lc_solved || 0), 0);
+
     return {
       studyMins,
       tasksDone: dayTasks.filter(t => t.completed).length,
@@ -172,7 +220,9 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
       waterMl: health?.water_intake || 0,
       didExercise: health?.did_exercise,
       calories: totalCals,
-      dayScore: dayLog?.day_score || 0
+      dayScore: dayLog?.day_score || 0,
+      lcSolved: dayLog?.lc_solved || 0,
+      allTimeLC
     };
   }, [appData, selectedDate]);
 
@@ -273,10 +323,25 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
             <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><BookOpen className="w-5 h-5" /></div>
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Productivity</span>
           </div>
-          <div className="text-3xl font-black text-white">
-            {Math.floor(selectedDateStats.studyMins / 60)}<span className="text-lg text-slate-500 ml-1">h</span> {selectedDateStats.studyMins % 60}<span className="text-lg text-slate-500 ml-1">m</span>
+          <div className="space-y-4">
+            <div>
+              <div className="text-2xl font-black text-white">
+                {Math.floor(selectedDateStats.studyMins / 60)}<span className="text-sm text-slate-500 ml-1 uppercase">hr</span> {selectedDateStats.studyMins % 60}<span className="text-sm text-slate-500 ml-1 uppercase">min</span>
+              </div>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">Study Sessions</p>
+            </div>
+            <div className="pt-3 border-t border-slate-700/50">
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-black text-blue-400">{selectedDateStats.lcSolved}</span>
+                <span className="text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-tighter">Today</span>
+                <span className="text-sm text-slate-600 mb-1">/</span>
+                <span className="text-sm font-black text-slate-300 mb-0.5">{selectedDateStats.allTimeLC}</span>
+                <span className="text-[10px] font-black text-slate-500 mb-1.5 uppercase tracking-tighter">Total</span>
+                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">DSA Solved</p>
+              </div>
+             
+            </div>
           </div>
-          <p className="text-xs text-slate-500 font-bold mt-2 uppercase tracking-tighter">Study Sessions</p>
         </div>
 
         {/* Tasks Card */}
@@ -344,11 +409,11 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
             <h3 className="text-lg font-black text-white flex items-center gap-3">
               <Activity className="w-6 h-6 text-pink-500" /> Performance Trend
             </h3>
-            <span className="text-[10px] font-black text-slate-500 uppercase bg-slate-900 px-3 py-1 rounded-full border border-slate-700">7-Day Window</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase bg-slate-900 px-3 py-1 rounded-full border border-slate-700">All Time</span>
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
+              <LineChart data={allTimeData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                 <XAxis dataKey="name" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
                 <YAxis stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
@@ -358,11 +423,21 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'black', textTransform: 'uppercase', paddingTop: '20px' }} />
                 <Line type="monotone" dataKey="studyHours" name="Study" stroke="#3b82f6" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} activeDot={{ r: 8 }} />
-                <Line type="monotone" dataKey="tasks" name="Tasks" stroke="#22c55e" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
+                <Line type="monotone" dataKey="lcSolved" name="LC Solved" stroke="#60a5fa" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
                 <Line type="monotone" dataKey="dayScore" name="Day Score" stroke="#eab308" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
-                <Line type="monotone" dataKey="mood" name="Mood" stroke="#ec4899" strokeWidth={5} dot={{ r: 5, strokeWidth: 3, fill: '#0f172a' }} />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+          <div className="mt-6 flex items-center justify-center gap-6 pt-6 border-t border-slate-700/50">
+            <div className="flex flex-col items-center">
+               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Avg Score</span>
+               <span className="text-xl font-black text-yellow-500">{avgDayScore}</span>
+            </div>
+            <div className="w-px h-8 bg-slate-700/50"></div>
+            <div className="flex flex-col items-center">
+               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Avg Study</span>
+               <span className="text-xl font-black text-blue-400">{avgStudyHours}<span className="text-[10px] text-slate-500 ml-1">h/day</span></span>
+            </div>
           </div>
         </div>
 
@@ -397,6 +472,8 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
           </div>
         </div>
       </div>
+
+      <StaticWeekReport />
     </div>
   );
 }

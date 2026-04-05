@@ -1,6 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { AppData, LearningPlan, PlanDay, PlanTask, Goal } from "../data/types";
-import ReactMarkdown from "react-markdown";
 import {
   Target,
   Plus,
@@ -27,6 +26,7 @@ import {
   Clock,
 } from "lucide-react";
 import MdReader from "./mdReader";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 import { format, subDays, addDays, parseISO } from "date-fns";
 
@@ -559,6 +559,14 @@ function FreeGoals({ appData, updateAppData }: Props) {
     null,
   );
   const [actionPlanText, setActionPlanText] = useState("");
+  const [visibleActionPlans, setVisibleActionPlans] = useState<Record<string, boolean>>({});
+
+  const toggleActionPlanVisibility = (goalId: string) => {
+    setVisibleActionPlans(prev => ({
+      ...prev,
+      [goalId]: !prev[goalId]
+    }));
+  };
 
   const handleAddGoal = () => {
     if (!newTitle.trim()) return;
@@ -642,6 +650,9 @@ function FreeGoals({ appData, updateAppData }: Props) {
       ),
     }));
   };
+useEffect(() => {
+  console.log(getSkillName('kfem181p1'));
+}, [])
 
   const deleteMilestone = (goalId: string, milestoneId: string) => {
     updateAppData((prev) => ({
@@ -919,6 +930,7 @@ function FreeGoals({ appData, updateAppData }: Props) {
                     <span className="inline-flex px-3 py-1 bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-300 rounded-lg">
                       {getSkillName(goal.skill_id)} • {getHours(goal.skill_id)}h
                       Logged
+              
                     </span>
                     {totalRoutines > 0 && (
                       <span
@@ -960,12 +972,19 @@ function FreeGoals({ appData, updateAppData }: Props) {
               {/* ── Action Plan Section (Markdown) ── */}
               <div className="mb-8 space-y-3">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <button 
+                    onClick={() => toggleActionPlanVisibility(goal.id)}
+                    className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 hover:text-slate-300 transition-colors"
+                  >
                     <FileText className="w-3.5 h-3.5" /> Action Plan (Markdown)
-                  </span>
+                    {visibleActionPlans[goal.id] || isEditingActionPlan ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </button>
                   {!isEditingActionPlan ? (
                     <button
-                      onClick={() => startEditingActionPlan(goal)}
+                      onClick={() => {
+                        startEditingActionPlan(goal);
+                        if (!visibleActionPlans[goal.id]) toggleActionPlanVisibility(goal.id);
+                      }}
                       className="text-[10px] font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase flex items-center gap-1"
                     >
                       <Edit3 className="w-3 h-3" /> Edit Plan
@@ -980,29 +999,31 @@ function FreeGoals({ appData, updateAppData }: Props) {
                   )}
                 </div>
 
-                <div
-                  className={`rounded-xl border transition-all ${isEditingActionPlan ? "border-purple-500/50 bg-slate-900" : "border-slate-700/50 bg-slate-900/40"}`}
-                >
-                  {isEditingActionPlan ? (
-                    <textarea
-                      autoFocus
-                      value={actionPlanText}
-                      onChange={(e) => setActionPlanText(e.target.value)}
-                      placeholder="Write your action plan here using Markdown...&#10;Example:&#10;* [ ] Step 1&#10;* [ ] Step 2"
-                      className="w-full bg-transparent border-none p-4 text-sm text-slate-200 outline-none min-h-[150px] resize-y custom-scrollbar font-mono"
-                    />
-                  ) : (
-                    <div className="p-4 prose prose-invert prose-sm max-w-none prose-headings:mb-2 prose-p:mb-2 prose-ul:mb-2 prose-li:my-0 text-slate-300 min-h-[60px]">
-                      {goal.action_plan_md ? (
-                        <ReactMarkdown>{goal.action_plan_md}</ReactMarkdown>
-                      ) : (
-                        <p className="text-slate-600 italic text-xs">
-                          No action plan defined yet. Click edit to add one.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+                {(visibleActionPlans[goal.id] || isEditingActionPlan) && (
+                  <div
+                    className={`rounded-xl border transition-all ${isEditingActionPlan ? "border-purple-500/50 bg-slate-900" : "border-slate-700/50 bg-slate-900/40"}`}
+                  >
+                    {isEditingActionPlan ? (
+                      <textarea
+                        autoFocus
+                        value={actionPlanText}
+                        onChange={(e) => setActionPlanText(e.target.value)}
+                        placeholder="Write your action plan here using Markdown...&#10;Example:&#10;* [ ] Step 1&#10;* [ ] Step 2"
+                        className="w-full bg-transparent border-none p-4 text-sm text-slate-200 outline-none min-h-[150px] resize-y custom-scrollbar font-mono"
+                      />
+                    ) : (
+                      <div className="p-4 min-h-[60px]">
+                        {goal.action_plan_md ? (
+                          <MarkdownRenderer content={goal.action_plan_md} />
+                        ) : (
+                          <p className="text-slate-600 italic text-xs text-center py-4">
+                            No action plan defined yet. Click edit to add one.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="mb-8">

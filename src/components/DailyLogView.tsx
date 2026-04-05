@@ -72,32 +72,60 @@ export function DailyLogView({ appData, updateAppData }: Props) {
                     }}
                   />
                 </div>
-                <div className="w-full md:w-32 flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-2xl border border-slate-700/50">
-                  <label className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-2">Day Score</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.1"
-                    className="w-full bg-transparent text-center text-3xl font-black text-white outline-none"
-                    placeholder="0.0"
-                    value={appData.daily_logs[dateStr]?.day_score || ''}
-                    onChange={(e) => {
-                      const day_score = parseFloat(e.target.value);
-                      updateAppData(prev => ({
-                        ...prev,
-                        daily_logs: {
-                          ...prev.daily_logs,
-                          [dateStr]: {
-                            ...prev.daily_logs[dateStr],
-                            date: dateStr,
-                            day_score: isNaN(day_score) ? undefined : day_score
+                <div className="w-full md:w-auto flex gap-4">
+                  <div className="w-24 md:w-32 flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-2xl border border-slate-700/50">
+                    <label className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-2 text-center">Day Score</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      className="w-full bg-transparent text-center text-2xl font-black text-white outline-none"
+                      placeholder="0.0"
+                      value={appData.daily_logs[dateStr]?.day_score || ''}
+                      onChange={(e) => {
+                        const day_score = parseFloat(e.target.value);
+                        updateAppData(prev => ({
+                          ...prev,
+                          daily_logs: {
+                            ...prev.daily_logs,
+                            [dateStr]: {
+                              ...prev.daily_logs[dateStr],
+                              date: dateStr,
+                              day_score: isNaN(day_score) ? undefined : day_score
+                            }
                           }
-                        }
-                      }));
-                    }}
-                  />
-                  <div className="text-[10px] font-bold text-slate-500 mt-1">out of 10</div>
+                        }));
+                      }}
+                    />
+                    <div className="text-[10px] font-bold text-slate-500 mt-1">/ 10</div>
+                  </div>
+
+                  <div className="w-24 md:w-32 flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-2xl border border-slate-700/50">
+                    <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 text-center">LC Solved</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="w-full bg-transparent text-center text-2xl font-black text-white outline-none"
+                      placeholder="0"
+                      value={appData.daily_logs[dateStr]?.lc_solved || ''}
+                      onChange={(e) => {
+                        const lc_solved = parseInt(e.target.value);
+                        updateAppData(prev => ({
+                          ...prev,
+                          daily_logs: {
+                            ...prev.daily_logs,
+                            [dateStr]: {
+                              ...prev.daily_logs[dateStr],
+                              date: dateStr,
+                              lc_solved: isNaN(lc_solved) ? undefined : lc_solved
+                            }
+                          }
+                        }));
+                      }}
+                    />
+                    <div className="text-[10px] font-bold text-slate-500 mt-1">Questions</div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -21,6 +21,7 @@ export interface DailyLog {
   energy_morning?: number; // 1-5
   summary?: string; // Short summary of the day
   day_score?: number; // 0-10
+  lc_solved?: number; // Number of LC questions solved
   sleep_logs?: SleepLog[];
 }
 

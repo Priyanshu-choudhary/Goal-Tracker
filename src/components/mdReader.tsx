@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 function MdReader() {
   const [content, setContent] = useState("");
@@ -11,8 +11,8 @@ function MdReader() {
   }, []);
 
   return (
-    <div>
-      <ReactMarkdown>{content}</ReactMarkdown>
+    <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
+      <MarkdownRenderer content={content} />
     </div>
   );
 }

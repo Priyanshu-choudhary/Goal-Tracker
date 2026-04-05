@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { AppData } from '../../data/types';
-import { format, subDays, parseISO, isSameDay, differenceInCalendarDays } from 'date-fns';
+import { format, subDays, parseISO, isSameDay, differenceInCalendarDays, addDays } from 'date-fns';
 
 interface Props {
   appData: AppData;
@@ -19,15 +19,16 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
     return diff >= 0 ? diff + 1 : 0;
   }, [appData, selectedDate]);
 
-  // We'll show the last 40 days ending at the selectedDate or Today (whichever is later)
+  // Show a fixed 40-day challenge window starting from the configured challenge start date.
   const days = useMemo(() => {
     const today = new Date();
     const viewed = parseISO(selectedDate);
-    const endDate = viewed > today ? viewed : today;
-    
+    const startStr = appData.settings.challenge_start_date || (appData.learning_plans?.[0]?.start_date);
+    const startDate = startStr ? parseISO(startStr) : subDays(viewed > today ? viewed : today, 39);
+
     const result = [];
-    for (let i = 39; i >= 0; i--) {
-      const d = subDays(endDate, i);
+    for (let i = 0; i < 40; i++) {
+      const d = addDays(startDate, i);
       const dateStr = format(d, 'yyyy-MM-dd');
       const log = appData.daily_logs[dateStr];
       const score = log?.day_score || 0;
@@ -41,6 +42,23 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
     }
     return result;
   }, [appData, selectedDate]);
+
+  const weeks = useMemo(() => {
+    const result = [];
+
+    for (let i = 0; i < days.length; i += 7) {
+      const weekDays = days.slice(i, i + 7);
+      result.push({
+        label:
+          weekDays.length > 0
+            ? `${format(weekDays[0].date, 'MMM d')} - ${format(weekDays[weekDays.length - 1].date, 'MMM d')}`
+            : '',
+        days: weekDays
+      });
+    }
+
+    return result;
+  }, [days]);
 
   const getColor = (score: number) => {
     if (score === 0) return 'bg-slate-800/50 border-slate-700/30';
@@ -77,7 +95,7 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
             <div className="w-2 h-6 bg-emerald-500 rounded-full" /> Continuity Matrix
             {challengeDay > 0 && (
               <span className="ml-2 px-3 py-1 bg-emerald-500 text-slate-900 text-[15px] font-black rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] ">
-                DAY {challengeDay-365}
+                DAY {challengeDay}
               </span>
             )}
           </h3>
@@ -103,25 +121,40 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
-        {days.map((day, i) => (
-          <div 
-            key={day.dateStr} 
-            className="group relative"
+      <div className="space-y-4">
+        {weeks.map((week, weekIndex) => (
+          <div
+            key={week.label}
+            className="flex flex-col gap-2 lg:flex-row lg:items-center"
           >
-            <div 
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-[4px] border transition-all duration-300 ${getColor(day.score)} ${day.isSelected ? 'border-white scale-110 z-10' : ''} ${day.isToday ? 'animate-pulse-today ring-2 ring-emerald-500/50' : ''}`}
-            />
-            
-            {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-32 p-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none text-center">
-              <div className="text-[10px] font-black text-white mb-1">{format(day.date, 'MMM d, yyyy')}</div>
-              <div className={`text-[10px] font-bold uppercase ${day.score === 0 ? 'text-slate-500' : 'text-emerald-400'}`}>
-                Score: {day.score || 'N/A'}
+            <div className="w-full lg:w-28 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+              Week {weekIndex + 1}
+              <div className="mt-1 text-[11px] tracking-normal text-slate-400 normal-case">
+                {week.label}
               </div>
-              <div className="text-[9px] text-slate-400 mt-0.5">{getLabel(day.score)}</div>
-              {day.isToday && <div className="text-[8px] text-emerald-500 font-black uppercase mt-1">Today</div>}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900" />
+            </div>
+            <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
+              {week.days.map((day) => (
+                <div 
+                  key={day.dateStr} 
+                  className="group relative"
+                >
+                  <div 
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-[4px] border transition-all duration-300 ${getColor(day.score)} ${day.isSelected ? 'border-white scale-110 z-10' : ''} ${day.isToday ? 'animate-pulse-today ring-2 ring-emerald-500/50' : ''}`}
+                  />
+                  
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-32 p-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none text-center">
+                    <div className="text-[10px] font-black text-white mb-1">{format(day.date, 'MMM d, yyyy')}</div>
+                    <div className={`text-[10px] font-bold uppercase ${day.score === 0 ? 'text-slate-500' : 'text-emerald-400'}`}>
+                      Score: {day.score || 'N/A'}
+                    </div>
+                    <div className="text-[9px] text-slate-400 mt-0.5">{getLabel(day.score)}</div>
+                    {day.isToday && <div className="text-[8px] text-emerald-500 font-black uppercase mt-1">Today</div>}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900" />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
