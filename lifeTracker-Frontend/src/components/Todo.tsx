@@ -8,6 +8,7 @@ import {
 import { format, isToday, parseISO, subDays, addDays, isSameDay } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+// import StaticEndGoal from './StaticEndGoal';/
 
 interface Props {
     appData: AppData;
@@ -476,6 +477,7 @@ export function Todo({ appData, updateAppData }: Props) {
             </div>
 
             <div className="flex-1 space-y-6">
+                {/* <StaticEndGoal /> */}
                 {selectedSectionId !== 'goals' ? (
                     <>
                         <div className="bg-slate-800 rounded-3xl border border-slate-700 p-6 shadow-xl space-y-6">

@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { AppData } from '../data/types';
 import { SleepModule } from './modules/SleepModule';
-import { DaySectionsModule } from './modules/DaySectionsModule';
-import { FoodModule } from './modules/FoodModule';
 import { StudyModule } from './modules/StudyModule';
-import { HealthModule } from './modules/HealthModule';
-import { ChevronLeft, ChevronRight, Moon, Sun, Utensils, BookOpen, HeartPulse, PenLine } from 'lucide-react';
+// import StaticEndGoal from './StaticEndGoal';
+import { ChevronLeft, ChevronRight, Moon, BookOpen, PenLine } from 'lucide-react';
 
 interface Props {
   appData: AppData;
@@ -18,7 +16,7 @@ export function DailyLogView({ appData, updateAppData }: Props) {
   const dateStr = format(currentDate, 'yyyy-MM-dd');
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    study: true, sleep: true, sections: true, food: true, health: true, summary: true
+    study: true, sleep: true, summary: true
   });
 
   const toggle = (key: string) => setExpanded(p => ({ ...p, [key]: !p[key] }));
@@ -38,6 +36,7 @@ export function DailyLogView({ appData, updateAppData }: Props) {
       </div>
 
       <div className="space-y-6">
+        {/* <StaticEndGoal /> */}
         {/* Module 0: Daily Summary */}
         <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-lg">
           <button onClick={() => toggle('summary')} className="w-full flex items-center justify-between p-5 bg-slate-800 hover:bg-slate-750 transition-colors">
@@ -163,53 +162,7 @@ export function DailyLogView({ appData, updateAppData }: Props) {
           )}
         </div>
 
-        {/* Module 2: Day Sections */}
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-lg">
-          <button onClick={() => toggle('sections')} className="w-full flex items-center justify-between p-5 bg-slate-800 hover:bg-slate-750 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-600/20 text-emerald-400 rounded-lg"><Sun className="w-5 h-5" /></div>
-              <h3 className="text-lg font-bold text-white">Day Sections</h3>
-            </div>
-            <span className="text-slate-500 text-sm font-medium">{expanded.sections ? 'Collapse' : 'Expand'}</span>
-          </button>
-          {expanded.sections && (
-            <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
-              <DaySectionsModule appData={appData} updateAppData={updateAppData} selectedDate={dateStr} />
-            </div>
-          )}
-        </div>
 
-        {/* Module 3: Food */}
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-lg">
-          <button onClick={() => toggle('food')} className="w-full flex items-center justify-between p-5 bg-slate-800 hover:bg-slate-750 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-600/20 text-green-400 rounded-lg"><Utensils className="w-5 h-5" /></div>
-              <h3 className="text-lg font-bold text-white">Food Log</h3>
-            </div>
-            <span className="text-slate-500 text-sm font-medium">{expanded.food ? 'Collapse' : 'Expand'}</span>
-          </button>
-          {expanded.food && (
-            <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
-              <FoodModule appData={appData} updateAppData={updateAppData} selectedDate={dateStr} />
-            </div>
-          )}
-        </div>
-
-        {/* Module 6: Health */}
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-lg">
-          <button onClick={() => toggle('health')} className="w-full flex items-center justify-between p-5 bg-slate-800 hover:bg-slate-750 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-600/20 text-red-400 rounded-lg"><HeartPulse className="w-5 h-5" /></div>
-              <h3 className="text-lg font-bold text-white">Health & Wellness</h3>
-            </div>
-            <span className="text-slate-500 text-sm font-medium">{expanded.health ? 'Collapse' : 'Expand'}</span>
-          </button>
-          {expanded.health && (
-            <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
-              <HealthModule appData={appData} updateAppData={updateAppData} selectedDate={dateStr} />
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

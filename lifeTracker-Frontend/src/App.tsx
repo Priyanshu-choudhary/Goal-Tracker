@@ -8,6 +8,7 @@ import { DailyLogView } from './components/DailyLogView';
 import { Analytics } from './components/Analytics';
 import { GoalsView } from './components/GoalsView';
 import { Todo } from './components/Todo';
+import { FinanceView } from './components/FinanceView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -36,6 +37,8 @@ export default function App() {
         return <GoalsView appData={appData} updateAppData={updateAppData} />;
       case 'analytics':
         return <Analytics appData={appData} updateAppData={updateAppData} />;
+      case 'finance':
+        return <FinanceView appData={appData} updateAppData={updateAppData} />;
       default:
         return <Analytics appData={appData} updateAppData={updateAppData} />;
     }

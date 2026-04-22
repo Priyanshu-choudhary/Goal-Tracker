@@ -23,10 +23,11 @@ import {
   Save,
   FileText,
   Download,
-  Clock,
+  
 } from "lucide-react";
 import MdReader from "./mdReader";
 import MarkdownRenderer from "./MarkdownRenderer";
+// import StaticEndGoal from "./StaticEndGoal";
 
 import { format, subDays, addDays, parseISO } from "date-fns";
 
@@ -1198,114 +1199,7 @@ useEffect(() => {
   );
 }
 
-// ─── RIGID SCHEDULE ──────────────────────────────────────────────────────────
-function RigidSchedule() {
-  const schedule = [
-    {
-      time: "07:00 - 07:20",
-      task: "Warm-up: DSA Revision",
-      category: "Recall",
-      color: "purple",
-    },
-    {
-      time: "07:20 - 10:00",
-      task: "DSA Main: 5 GFG Lectures",
-      category: "Focus",
-      color: "purple",
-    },
-    {
-      time: "10:00 - 11:30",
-      task: "DSA: 2 New LC + 1 Revision",
-      category: "Problem",
-      color: "purple",
-    },
-    {
-      time: "11:30 - 12:30",
-      task: "Java Core: OOP/Collections/MT",
-      category: "Core",
-      color: "blue",
-    },
-    {
-      time: "12:30 - 13:00",
-      task: "Lunch Break",
-      category: "Health",
-      color: "emerald",
-    },
-    {
-      time: "13:00 - 13:30",
-      task: "Spring Boot / Sys Design",
-      category: "System",
-      color: "blue",
-    },
-    {
-      time: "13:30 - 14:15",
-      task: "AI/ML: Revision + New Topic",
-      category: "AI",
-      color: "indigo",
-    },
-    {
-      time: "14:15 - 16:00",
-      task: "Job Search: Full Routine",
-      category: "Duty",
-      color: "slate",
-    },
-    {
-      time: "16:00 - 16:30",
-      task: "Interview Qs: Java/Spring",
-      category: "Active",
-      color: "blue",
-    },
-    {
-      time: "16:30+",
-      task: "Evening: Free & Recovery",
-      category: "Rest",
-      color: "emerald",
-    },
-  ];
 
-  const colors: any = {
-    purple: "border-purple-500/30 bg-purple-500/5 text-purple-300",
-    emerald: "border-emerald-500/30 bg-emerald-500/5 text-emerald-300",
-    blue: "border-blue-500/30 bg-blue-500/5 text-blue-300",
-    slate: "border-slate-500/30 bg-slate-500/5 text-slate-300",
-    indigo: "border-indigo-500/30 bg-indigo-500/5 text-indigo-300",
-  };
-
-  return (
-    <div className="bg-slate-800/50 rounded-3xl border border-slate-700/50 p-6 shadow-xl">
-      <div className="flex items-center gap-3 mb-6 px-2">
-        <div className="p-2 bg-purple-500/10 rounded-xl">
-          <Clock className="w-5 h-5 text-purple-400" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-white leading-tight">
-            40-Day Mastery Schedule
-          </h3>
-          <p className="text-xs text-slate-500 font-medium">
-            7.5 Hours Active Study • Protect the Evening Break
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-        {schedule.map((item, i) => (
-          <div
-            key={i}
-            className={`p-4 rounded-2xl border transition-all hover:scale-[1.02] ${colors[item.color]}`}
-          >
-            <div className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">
-              {item.time}
-            </div>
-            <div className="text-sm font-bold leading-snug">{item.task}</div>
-            <div className="mt-2 text-[9px] font-bold uppercase py-0.5 px-2 rounded-full border border-current w-fit opacity-50">
-              {item.category}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─── Root GoalsView ────────────────────────────────────────────────────────────
 export function GoalsView({ appData, updateAppData }: Props) {
@@ -1322,7 +1216,7 @@ export function GoalsView({ appData, updateAppData }: Props) {
         </div>
       </div>
 
-      <RigidSchedule />
+      {/* <StaticEndGoal /> */}
 
       <FreeGoals appData={appData} updateAppData={updateAppData} />
     </div>

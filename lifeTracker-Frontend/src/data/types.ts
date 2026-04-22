@@ -8,7 +8,9 @@ export interface UserSettings {
 
 export interface SleepLog {
   id: string;
+  start_date?: string; // YYYY-MM-DD
   start_time: string;
+  end_date?: string;   // YYYY-MM-DD
   end_time: string;
   quality_score?: number;
   notes?: string;
@@ -194,6 +196,8 @@ export interface AppData {
   todo_tasks: TodoTask[];
   todo_sections: TodoSection[];
   learning_plans?: LearningPlan[];
+  finance_transactions?: FinanceTransaction[];
+  wealth_logs?: WealthLog[];
 }
 
 export interface TodoSection {
@@ -206,4 +210,22 @@ export interface TodoSubtask {
   title: string;
   completed: boolean;
   createdAt?: string;
+}
+
+export interface FinanceTransaction {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  amount: number;         // INR
+  bonus_percent: number;  // e.g. 5
+  bonus: number;          // computed: amount * bonus_percent / 100
+  is_personal?: boolean;  // personal expense — no bonus
+  is_fund_add?: boolean;  // fund addition - directly added to bank, not counted as spend
+  label?: string;         // optional description
+}
+
+export interface WealthLog {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  time: string;           // HH:mm
+  amount: number;         // INR
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, CalendarDays, BarChart2, Target, Settings, Activity, CheckSquare } from 'lucide-react';
+import { Home, CalendarDays, BarChart2, Target, Settings, Activity, CheckSquare, IndianRupee } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { UserSettings } from '../data/types';
 
@@ -15,6 +15,7 @@ export function Sidebar({ activeTab, setActiveTab, settings }: SidebarProps) {
     { id: 'goals', label: 'Goals', icon: Target },
     { id: 'daily-log', label: 'Daily Log', icon: CalendarDays },
     { id: 'todo', label: 'TODO', icon: CheckSquare },
+    { id: 'finance', label: 'Finance', icon: IndianRupee },
   ];
 
 

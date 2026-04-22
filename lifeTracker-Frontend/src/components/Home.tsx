@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppData } from '../data/types';
+// import StaticEndGoal from './StaticEndGoal';
 
 interface Props {
   appData: AppData;
@@ -12,6 +13,7 @@ export function Home({ onNavigate }: Props) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-white">Dashboard</h2>
       <p className="text-slate-400">Welcome to LifeTracker. Start by logging your day or viewing your progress.</p>
+          {/* <StaticEndGoal /> */}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button 

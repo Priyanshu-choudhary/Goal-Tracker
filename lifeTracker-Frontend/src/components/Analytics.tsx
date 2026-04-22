@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ContinuityGraph } from './modules/ContinuityGraph';
 import { StaticWeekReport } from './modules/StaticWeekReport';
+// import StaticEndGoal from './StaticEndGoal';
 
 interface Props {
   appData: AppData;
@@ -274,6 +275,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
         </div>
 
         {/* Continuity Matrix */}
+        {/* <StaticEndGoal className="col-span-full" /> */}
         <ContinuityGraph appData={appData} selectedDate={selectedDate} />
 
         {/* Primary Metrics Grid */}

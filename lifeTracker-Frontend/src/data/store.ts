@@ -25,6 +25,8 @@ export const defaultAppData: AppData = {
   todo_tasks: [],
   todo_sections: [{ id: 'inbox', name: 'Inbox' }],
   learning_plans: [dsaPlan],
+  finance_transactions: [],
+  wealth_logs: [],
 };
 
 export function loadData(): AppData {
