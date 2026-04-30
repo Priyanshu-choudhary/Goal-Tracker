@@ -12,6 +12,7 @@ import {
   Wallet,
   ShoppingBag,
   Landmark,
+  RefreshCw,
 } from 'lucide-react';
 import { AppData, FinanceTransaction } from '../data/types';
 import { cn } from '../lib/utils';
@@ -31,6 +32,7 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
   const [bonusPct, setBonusPct] = useState(5);
   const [label, setLabel] = useState('');
   const [txMode, setTxMode] = useState<'regular' | 'personal' | 'fund_add'>('regular');
+  const [selectedBank, setSelectedBank] = useState<'SBI' | 'JIO' | 'Airtel' | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState('');
 
@@ -51,8 +53,10 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
     let bonusToday = 0;
     let personalAllTime = 0;
     let fundAllTime = 0;
+    const uniqueDates = new Set<string>();
 
     for (const t of transactions) {
+      uniqueDates.add(t.date);
       if (t.is_fund_add) {
         fundAllTime += t.amount;
         continue;
@@ -66,10 +70,24 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
       }
     }
 
+    const dayCount = uniqueDates.size || 1;
+    const avgBonus = bonusAllTime / dayCount;
+    const avgPersonal = personalAllTime / dayCount;
+
     // Bank balance starts from 1000
     const bankBalance = 1000 + bonusAllTime + fundAllTime - personalAllTime;
 
-    return { totalAllTime, totalToday, bonusAllTime, bonusToday, personalAllTime, bankBalance, count: transactions.length };
+    return { 
+      totalAllTime, 
+      totalToday, 
+      bonusAllTime, 
+      bonusToday, 
+      personalAllTime, 
+      bankBalance, 
+      count: transactions.length,
+      avgBonus,
+      avgPersonal
+    };
   }, [transactions, todayStr]);
 
   // ── handlers ────────────────────────────────────────────────────────
@@ -93,6 +111,7 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
       is_personal: txMode === 'personal',
       is_fund_add: txMode === 'fund_add',
       label: label.trim() || undefined,
+      bank: selectedBank,
     };
 
     updateAppData((prev) => ({
@@ -106,6 +125,7 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
     setBonusPct(5);
     setLabel('');
     setTxMode('regular');
+    setSelectedBank(undefined);
     setModalOpen(false);
   };
 
@@ -124,6 +144,7 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
     setBonusPct(5);
     setLabel('');
     setTxMode('regular');
+    setSelectedBank(undefined);
   };
 
   const fmt = (n: number) =>
@@ -158,6 +179,19 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
           label="Bank Balance"
           value={`₹${fmt(stats.bankBalance)}`}
           accent="indigo"
+          action={
+            <button
+              onClick={() => {
+                setTxMode('fund_add');
+                setLabel('Balance Audit');
+                setModalOpen(true);
+              }}
+              className="p-1 rounded-md hover:bg-indigo-500/20 text-indigo-400/70 hover:text-indigo-400 transition-colors"
+              title="Audit / Adjust Balance"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </button>
+          }
         />
         <StatCard
           icon={<Hash className="w-5 h-5 text-slate-300" />}
@@ -182,6 +216,7 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
           label="Bonus (All Time)"
           value={`₹${fmt(stats.bonusAllTime)}`}
           accent="emerald"
+          subValue={`Avg. ₹${fmt(stats.avgBonus)} / day`}
         />
         <StatCard
           icon={<Gift className="w-5 h-5 text-sky-400" />}
@@ -194,6 +229,7 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
           label="Personal Expenses"
           value={`₹${fmt(stats.personalAllTime)}`}
           accent="purple"
+          subValue={`Avg. ₹${fmt(stats.avgPersonal)} / day`}
         />
       </div>
 
@@ -324,6 +360,36 @@ export function FinanceView({ appData, updateAppData }: FinanceViewProps) {
               </div>
             </div>
 
+            {/* Bank Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                Select Bank <span className="normal-case text-slate-600">(optional)</span>
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { id: 'SBI', color: 'bg-[#2a64b2]', text: 'S' },
+                  { id: 'JIO', color: 'bg-[#0a2885]', text: 'J' },
+                  { id: 'Airtel', color: 'bg-[#e40000]', text: 'A' },
+                ].map((bank) => (
+                  <button
+                    key={bank.id}
+                    onClick={() => setSelectedBank(selectedBank === bank.id ? undefined : (bank.id as any))}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200',
+                      selectedBank === bank.id
+                        ? 'bg-slate-700 border-slate-500 text-white'
+                        : 'bg-slate-800/40 border-slate-700/40 text-slate-400 hover:border-slate-600'
+                    )}
+                  >
+                    <div className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white', bank.color)}>
+                      {bank.text}
+                    </div>
+                    <span className="text-xs font-medium">{bank.id}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Label */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">
@@ -426,9 +492,11 @@ interface StatCardProps {
   label: string;
   value: string;
   accent: 'rose' | 'amber' | 'emerald' | 'sky' | 'slate' | 'purple' | 'indigo';
+  subValue?: string;
+  action?: React.ReactNode;
 }
 
-function StatCard({ icon, label, value, accent }: StatCardProps) {
+function StatCard({ icon, label, value, accent, subValue, action }: StatCardProps) {
   const ring: Record<string, string> = {
     rose: 'border-rose-500/20 bg-rose-500/5',
     amber: 'border-amber-500/20 bg-amber-500/5',
@@ -450,9 +518,19 @@ function StatCard({ icon, label, value, accent }: StatCardProps) {
         <span className="text-xs text-slate-500 font-medium uppercase tracking-wide leading-tight">
           {label}
         </span>
-        {icon}
+        <div className="flex items-center gap-2">
+          {action}
+          {icon}
+        </div>
       </div>
-      <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
+      <div>
+        <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
+        {subValue && (
+          <p className="text-[10px] text-slate-500 mt-1.5 leading-none font-medium opacity-80">
+            {subValue}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -462,6 +540,25 @@ interface TransactionRowProps {
   onDelete: (id: string) => void;
   fmt: (n: number) => string;
   todayStr: string;
+}
+
+function BankLogo({ bank, className }: { bank: string, className?: string }) {
+  const configs: Record<string, { color: string, text: string }> = {
+    SBI: { color: 'bg-[#2a64b2]', text: 'S' },
+    JIO: { color: 'bg-[#0a2885]', text: 'J' },
+    Airtel: { color: 'bg-[#e40000]', text: 'A' },
+  };
+  const config = configs[bank];
+  if (!config) return null;
+
+  return (
+    <div className={cn('flex items-center gap-1.5', className)}>
+      <div className={cn('w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white', config.color)}>
+        {config.text}
+      </div>
+      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{bank}</span>
+    </div>
+  );
 }
 
 function TransactionRow({ tx, onDelete, fmt, todayStr }: TransactionRowProps) {
@@ -490,6 +587,7 @@ function TransactionRow({ tx, onDelete, fmt, todayStr }: TransactionRowProps) {
               Fund Add
             </span>
           )}
+          {tx.bank && <BankLogo bank={tx.bank} className="ml-1" />}
         </div>
         {tx.label && (
           <p className="text-xs text-slate-500 mt-0.5">{tx.label}</p>

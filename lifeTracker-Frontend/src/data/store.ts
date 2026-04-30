@@ -29,24 +29,35 @@ export const defaultAppData: AppData = {
   wealth_logs: [],
 };
 
+export function mergeWithDefault(saved: any): AppData {
+  return {
+    ...defaultAppData,
+    settings: {
+      ...defaultAppData.settings,
+      ...(saved.settings || {}),
+    },
+    // Guard every field: if server returns null/undefined, fall back to the default
+    daily_logs:            saved.daily_logs            ?? defaultAppData.daily_logs,
+    day_sections:          saved.day_sections          ?? defaultAppData.day_sections,
+    food_logs:             saved.food_logs             ?? defaultAppData.food_logs,
+    study_sessions:        saved.study_sessions        ?? defaultAppData.study_sessions,
+    skills:                saved.skills?.length        ? saved.skills        : defaultAppData.skills,
+    goals:                 saved.goals                 ?? defaultAppData.goals,
+    health_logs:           saved.health_logs           ?? defaultAppData.health_logs,
+    todo_tasks:            saved.todo_tasks            ?? defaultAppData.todo_tasks,
+    todo_sections:         saved.todo_sections?.length ? saved.todo_sections : defaultAppData.todo_sections,
+    finance_transactions:  saved.finance_transactions  ?? defaultAppData.finance_transactions,
+    wealth_logs:           saved.wealth_logs           ?? defaultAppData.wealth_logs,
+    learning_plans:        saved.learning_plans?.length ? saved.learning_plans : defaultAppData.learning_plans,
+  };
+}
+
 export function loadData(): AppData {
   try {
     const raw = localStorage.getItem('life_tracker_app_data');
     if (raw) {
-      const saved: AppData = JSON.parse(raw);
-      // Merge any new top-level fields and settings so old saves stay compatible
-      return {
-        ...defaultAppData,
-        ...saved,
-        settings: {
-          ...defaultAppData.settings,
-          ...(saved.settings || {})
-        },
-        // Always make sure learning_plans has the DSA plan (add it if missing)
-        learning_plans: saved.learning_plans?.length
-          ? saved.learning_plans
-          : defaultAppData.learning_plans,
-      };
+      const saved = JSON.parse(raw);
+      return mergeWithDefault(saved);
     }
   } catch (e) {
     console.error('Failed to parse app data', e);

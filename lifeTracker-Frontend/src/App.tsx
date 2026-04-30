@@ -9,6 +9,7 @@ import { Analytics } from './components/Analytics';
 import { GoalsView } from './components/GoalsView';
 import { Todo } from './components/Todo';
 import { FinanceView } from './components/FinanceView';
+import { SettingsView } from './components/SettingsView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -23,6 +24,9 @@ export default function App() {
       if (typeof updates === 'function') {
         return updates(prev);
       }
+      // Spreading always works correctly:
+      //  - Partial update  → only the provided keys override prev
+      //  - Full replacement → all keys in hydratedData override prev
       return { ...prev, ...updates };
     });
   };
@@ -39,6 +43,8 @@ export default function App() {
         return <Analytics appData={appData} updateAppData={updateAppData} />;
       case 'finance':
         return <FinanceView appData={appData} updateAppData={updateAppData} />;
+      case 'settings':
+        return <SettingsView appData={appData} updateAppData={updateAppData} />;
       default:
         return <Analytics appData={appData} updateAppData={updateAppData} />;
     }

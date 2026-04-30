@@ -221,6 +221,7 @@ export interface FinanceTransaction {
   is_personal?: boolean;  // personal expense — no bonus
   is_fund_add?: boolean;  // fund addition - directly added to bank, not counted as spend
   label?: string;         // optional description
+  bank?: 'SBI' | 'JIO' | 'Airtel'; // optional bank
 }
 
 export interface WealthLog {

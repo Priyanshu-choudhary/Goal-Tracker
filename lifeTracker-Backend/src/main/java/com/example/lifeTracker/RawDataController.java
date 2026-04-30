@@ -21,8 +21,11 @@ public class RawDataController {
     /**
      * POST: Saves any JSON object directly to MongoDB.
      */
-    @PostMapping("/raw-log")
-    public Map<String, Object> saveRaw(@RequestBody Map<String, Object> body) {
+       @PostMapping("/raw-log")
+        public Map<String, Object> saveRaw(@RequestBody Map<String, Object> body) {
+        // Option A: Clear old data first so there's always only 1 document
+        mongoTemplate.dropCollection(COLLECTION_NAME); 
+        
         Document doc = new Document(body);
         Document saved = mongoTemplate.insert(doc, COLLECTION_NAME);
         return saved;
