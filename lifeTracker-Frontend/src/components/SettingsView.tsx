@@ -24,7 +24,7 @@ export function SettingsView({ appData, updateAppData }: Props) {
   const handlePush = async () => {
     setSyncStatus({ type: 'loading', message: 'Pushing data to cloud...' });
     try {
-      const response = await fetch('http://localhost:8080/api/raw-log', {
+      const response = await fetch('http://13.203.92.104:8081/api/raw-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export function SettingsView({ appData, updateAppData }: Props) {
   const handlePull = async () => {
     setSyncStatus({ type: 'loading', message: 'Pulling data from cloud...' });
     try {
-      const response = await fetch('http://localhost:8080/api/raw-log');
+      const response = await fetch('http://13.203.92.104:8081/api/raw-log');
       if (!response.ok) throw new Error('Failed to pull data');
       
       const rawData = await response.json();
