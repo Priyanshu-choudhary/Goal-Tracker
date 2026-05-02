@@ -7,6 +7,8 @@ interface Props {
   selectedDate: string;
 }
 
+const CHALLENGE_DAYS = 30;
+
 export function ContinuityGraph({ appData, selectedDate }: Props) {
   // Calculate challenge day relative to the VIEWED date
   const challengeDay = useMemo(() => {
@@ -16,18 +18,19 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
     const start = parseISO(startStr);
     const viewed = parseISO(selectedDate);
     const diff = differenceInCalendarDays(viewed, start);
-    return diff >= 0 ? diff + 1 : 0;
+    if (diff < 0) return 0;
+    return Math.min(diff + 1, CHALLENGE_DAYS);
   }, [appData, selectedDate]);
 
-  // Show a fixed 40-day challenge window starting from the configured challenge start date.
+  // Show a fixed 30-day challenge window starting from the configured challenge start date.
   const days = useMemo(() => {
     const today = new Date();
     const viewed = parseISO(selectedDate);
     const startStr = appData.settings.challenge_start_date || (appData.learning_plans?.[0]?.start_date);
-    const startDate = startStr ? parseISO(startStr) : subDays(viewed > today ? viewed : today, 39);
+    const startDate = startStr ? parseISO(startStr) : subDays(viewed > today ? viewed : today, CHALLENGE_DAYS - 1);
 
     const result = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < CHALLENGE_DAYS; i++) {
       const d = addDays(startDate, i);
       const dateStr = format(d, 'yyyy-MM-dd');
       const log = appData.daily_logs[dateStr];
@@ -99,7 +102,7 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
               </span>
             )}
           </h3>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">40-Day Mastery Progress</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">30-Day Mastery Progress</p>
         </div>
         <div className="flex items-center gap-4 bg-slate-900/50 px-4 py-2 rounded-2xl border border-slate-700/50">
           <div className="flex items-center gap-1.5">
@@ -181,7 +184,7 @@ export function ContinuityGraph({ appData, selectedDate }: Props) {
         </div>
         <div className="text-center">
           <div className="text-2xl font-black text-white">
-            {Math.round((days.filter(d => d.score > 0).length / 40) * 100)}%
+            {Math.round((days.filter(d => d.score > 0).length / CHALLENGE_DAYS) * 100)}%
           </div>
           <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Coverage</div>
         </div>

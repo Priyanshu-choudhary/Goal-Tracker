@@ -475,7 +475,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
         </div>
       </div>
 
-      <StaticWeekReport />
+  
     </div>
   );
 }

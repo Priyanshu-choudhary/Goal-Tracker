@@ -13,7 +13,7 @@ const defaultSkills: Skill[] = [
 export const defaultAppData: AppData = {
   settings: { 
     accentColor: 'blue',
-    challenge_start_date: '2026-03-20'
+    challenge_start_date: '2026-05-01'
   },
   daily_logs: {},
   day_sections: [],
@@ -30,11 +30,17 @@ export const defaultAppData: AppData = {
 };
 
 export function mergeWithDefault(saved: any): AppData {
+  const savedChallengeStartDate =
+    saved.settings?.challenge_start_date === '2026-03-20'
+      ? '2026-05-01'
+      : saved.settings?.challenge_start_date;
+
   return {
     ...defaultAppData,
     settings: {
       ...defaultAppData.settings,
       ...(saved.settings || {}),
+      challenge_start_date: savedChallengeStartDate ?? defaultAppData.settings.challenge_start_date,
     },
     // Guard every field: if server returns null/undefined, fall back to the default
     daily_logs:            saved.daily_logs            ?? defaultAppData.daily_logs,
