@@ -29,6 +29,8 @@ import MdReader from "./mdReader";
 import MarkdownRenderer from "./MarkdownRenderer";
 // import StaticEndGoal from "./StaticEndGoal";
 
+import TopDateHeader from "./TopDateHeader";
+
 import { format, subDays, addDays, parseISO } from "date-fns";
 
 interface Props {
@@ -551,11 +553,11 @@ function PlanDetail({
 }
 
 // ─── FREE GOALS (original) ────────────────────────────────────────────────────
-function FreeGoals({ appData, updateAppData }: Props) {
+function FreeGoals({ appData, updateAppData, selectedDate }: Props & { selectedDate: string }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSkillId, setNewSkillId] = useState(appData.skills[0]?.id || "");
-  const [selectedDate, setSelectedDate] = useState(todayStr());
+  // `selectedDate` is lifted to the parent GoalsView and passed in as a prop now.
   const [editingActionPlanId, setEditingActionPlanId] = useState<string | null>(
     null,
   );
@@ -761,84 +763,17 @@ useEffect(() => {
     }));
   };
 
-  const exportGoalsData = () => {
-    const dataToExport = {
-      export_date: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
-      goals: appData.goals,
-      goal_daily_logs: appData.goal_daily_logs || [],
-      skills: appData.skills, // Include skills so IDs match on re-import if needed
-    };
-
-    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `study_orbit_goals_backup_${format(new Date(), "yyyyMMdd_HHmm")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // export handled by parent via TopDateHeader
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-2xl p-1 shadow-lg">
-          <button
-            onClick={() =>
-              setSelectedDate(
-                format(subDays(parseISO(selectedDate), 1), "yyyy-MM-dd"),
-              )
-            }
-            className="p-2 hover:bg-slate-700 rounded-xl text-slate-400 transition-all"
-          >
-            <ChevronRight className="w-5 h-5 rotate-180" />
-          </button>
-          <div className="flex flex-col items-center px-4">
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              Tracking Date
-            </span>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-transparent border-none text-white text-sm outline-none font-bold text-center cursor-pointer"
-            />
-          </div>
-          <button
-            onClick={() =>
-              setSelectedDate(
-                format(addDays(parseISO(selectedDate), 1), "yyyy-MM-dd"),
-              )
-            }
-            className="p-2 hover:bg-slate-700 rounded-xl text-slate-400 transition-all"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-          {selectedDate !== todayStr() && (
-            <button
-              onClick={() => setSelectedDate(todayStr())}
-              className="ml-2 px-3 py-1 bg-purple-600/20 text-purple-400 text-[10px] font-bold rounded-lg hover:bg-purple-600/30 transition-all uppercase"
-            >
-              Today
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={exportGoalsData}
-            className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg text-sm border border-slate-600"
-          >
-            <Download className="w-4 h-4 text-blue-400" /> Export JSON
-          </button>
-          <button
-            onClick={() => setIsAdding(!isAdding)}
-            className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-purple-600/20 text-sm"
-          >
-            <Plus className="w-5 h-5" /> New Goal
-          </button>
-        </div>
+      <div className="flex items-center justify-end gap-3">
+        <button
+          onClick={() => setIsAdding(!isAdding)}
+          className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-purple-600/20 text-sm"
+        >
+          <Plus className="w-5 h-5" /> New Goal
+        </button>
       </div>
 
       {isAdding && (
@@ -1203,22 +1138,42 @@ useEffect(() => {
 
 // ─── Root GoalsView ────────────────────────────────────────────────────────────
 export function GoalsView({ appData, updateAppData }: Props) {
+  const [selectedDate, setSelectedDate] = useState(todayStr());
+
+  const exportGoalsData = () => {
+    const dataToExport = {
+      export_date: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+      goals: appData.goals,
+      goal_daily_logs: appData.goal_daily_logs || [],
+      skills: appData.skills, // Include skills so IDs match on re-import if needed
+    };
+
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `study_orbit_goals_backup_${format(new Date(), "yyyyMMdd_HHmm")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-8 pb-12">
-      <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg sticky top-0 z-20">
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Target className="w-6 h-6 text-purple-400" /> Long-term Goals
-          </h2>
-          <p className="text-slate-400 mt-1 text-sm">
-            Manage and track your primary learning objectives and milestones.
-          </p>
-        </div>
-      </div>
+      <TopDateHeader
+        title="Long-term Goals"
+        description=""
+        icon={<div className="p-3 bg-purple-600/20 text-purple-400 rounded-2xl"><Target className="w-6 h-6" /></div>}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        onExport={exportGoalsData}
+        exportLabel="Export JSON"
+      />
 
       {/* <StaticEndGoal /> */}
 
-      <FreeGoals appData={appData} updateAppData={updateAppData} />
+      <FreeGoals appData={appData} updateAppData={updateAppData} selectedDate={selectedDate} />
     </div>
   );
 }

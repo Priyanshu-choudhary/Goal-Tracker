@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { format, subDays, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { AppData } from '../data/types';
 import { SleepModule } from './modules/SleepModule';
 import { StudyModule } from './modules/StudyModule';
 // import StaticEndGoal from './StaticEndGoal';
-import { ChevronLeft, ChevronRight, Moon, BookOpen, PenLine } from 'lucide-react';
+import { Moon, BookOpen, PenLine } from 'lucide-react';
+import TopDateHeader from './TopDateHeader';
+import { exportDayData as exportDayDataHelper } from '../lib/exportHelpers';
 
 interface Props {
   appData: AppData;
@@ -12,8 +14,12 @@ interface Props {
 }
 
 export function DailyLogView({ appData, updateAppData }: Props) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const dateStr = format(currentDate, 'yyyy-MM-dd');
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const dateStr = selectedDate;
+
+  const exportDaily = () => {
+    exportDayDataHelper(appData, selectedDate, 'daily_logs_export');
+  };
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     study: true, sleep: true, summary: true
@@ -23,17 +29,14 @@ export function DailyLogView({ appData, updateAppData }: Props) {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="flex items-center justify-between bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-lg sticky top-0 z-20">
-        <button onClick={() => setCurrentDate(subDays(currentDate, 1))} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <h2 className="text-xl font-bold text-white tracking-wide">
-          {format(currentDate, 'EEEE, MMMM d, yyyy')}
-        </h2>
-        <button onClick={() => setCurrentDate(addDays(currentDate, 1))} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
+      <TopDateHeader
+        title="Daily Logs"
+        icon={<div className="p-3 bg-yellow-600/20 text-yellow-400 rounded-2xl"><PenLine className="w-6 h-6" /></div>}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        onExport={exportDaily}
+        exportLabel="EXPORT JSON"
+      />
 
       <div className="space-y-6">
         {/* <StaticEndGoal /> */}
