@@ -8,6 +8,7 @@ import {
   Clock, Utensils, BookOpen, Zap, Droplets, Dumbbell, Info
 } from 'lucide-react';
 import { ContinuityGraph } from './modules/ContinuityGraph';
+import FrictionAnalytics from './FrictionAnalytics';
 import { StaticWeekReport } from './modules/StaticWeekReport';
 // import StaticEndGoal from './StaticEndGoal';
 
@@ -403,7 +404,9 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
           </div>
         </div>
       </div>
-
+      <div className="space-y-6">
+        <FrictionAnalytics appData={appData} />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Trend Visualization */}
         <div className="p-8 bg-slate-800 border border-slate-700 rounded-[2.5rem] shadow-lg">

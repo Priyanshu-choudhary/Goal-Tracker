@@ -25,6 +25,23 @@ export interface DailyLog {
   day_score?: number; // 0-10
   lc_solved?: number; // Number of LC questions solved
   sleep_logs?: SleepLog[];
+  // Optional friction log for diagnostic "what went wrong" entries
+  friction?: FrictionLog;
+}
+
+export interface FrictionPattern {
+  id: string;
+  label: string;
+  tag: string; // e.g. 'fear' | 'time_waste' | 'sleep_drift' | 'avoidance'
+  category: string; // grouping category
+}
+
+export interface FrictionLog {
+  patterns_fired: string[]; // pattern ids
+  phone_in_bed?: boolean;
+  trigger_note?: string;
+  tags_fired?: string[]; // unique tags fired that day
+  logged_at?: string; // HH:mm
 }
 
 export interface DaySection {

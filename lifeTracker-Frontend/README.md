@@ -1,3 +1,58 @@
+# lifeTracker-Frontend
+
+A lightweight, local-first React + Vite frontend for personal life tracking: health, study, goals, habits, and daily logs with visual analytics and JSON export.
+
+**Tech stack**
+- React + TypeScript
+- Vite
+- Tailwind CSS (utility-first styling)
+- date-fns for date handling
+- Recharts for charts
+- Lucide icons
+
+**What this project is**
+
+lifeTracker-Frontend is the client-side UI for a personal life tracker app. It provides a compact dashboard for daily analytics, tools to record sleep/food/study data, goal and habit management, and the ability to export structured JSON of day or goals data for backups or LLM workflows.
+
+**Key features**
+- Daily Analytics: interactive date picker, continuity/trend charts, summary metrics, and per-day JSON export.
+- Daily Logs: create and edit daily summaries, sleep logs, study sessions, and quick metrics (day score, LC solved).
+- Long-term Goals: create goals, milestones, recurring routines, daily reflections, and goal-specific daily tracking with export.
+- Reusable date + export header used across views for consistent UX.
+- Study & Skill tracking: record study sessions, aggregate study hours by skill.
+- Modular UI components (modules folder) for clean separation of features.
+- Local-first data model: app data is stored in-memory (see `src/data/store.ts`) and arranged to be easy to persist or sync.
+
+**Project structure (important files)**
+- `src/` — main frontend source
+  - `App.tsx`, `main.tsx` — app entry
+  - `components/` — UI components and views (Analytics, DailyLogView, GoalsView, modules)
+  - `data/` — sample data, types, and store utilities
+  - `lib/` — helpers such as `exportHelpers.ts`
+
+**How to run (developer)**
+1. Install dependencies
+```bash
+npm install
+```
+2. Start dev server
+```bash
+npm run dev
+```
+3. Build for production
+```bash
+npm run build
+```
+
+**Export / Backup**
+- The app supports exporting selected-day JSON (detailed daily data + summary metrics) and a goals backup JSON via the header Export button.
+
+**Extending / Notes for contributors**
+- UI header for date + export is in `src/components/TopDateHeader.tsx` for reuse across views.
+- Day export logic is in `src/lib/exportHelpers.ts` and can be extended to include more contexts or formatted exports.
+- To persist data, wire `src/data/store.ts` to localStorage or a backend sync API.
+
+If you want, I can also add a short CONTRIBUTING.md, setup GitHub Actions for CI, or update the README with screenshots and usage examples — tell me which you'd like next.
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

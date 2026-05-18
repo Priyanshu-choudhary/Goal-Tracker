@@ -3,8 +3,9 @@ import { format } from 'date-fns';
 import { AppData } from '../data/types';
 import { SleepModule } from './modules/SleepModule';
 import { StudyModule } from './modules/StudyModule';
+import FrictionLog from './FrictionLog';
 // import StaticEndGoal from './StaticEndGoal';
-import { Moon, BookOpen, PenLine } from 'lucide-react';
+import { Moon, BookOpen, PenLine, AlertTriangle } from 'lucide-react';
 import TopDateHeader from './TopDateHeader';
 import { exportDayData as exportDayDataHelper } from '../lib/exportHelpers';
 
@@ -22,7 +23,7 @@ export function DailyLogView({ appData, updateAppData }: Props) {
   };
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    study: true, sleep: true, summary: true
+    study: true, sleep: true, summary: true, friction: true
   });
 
   const toggle = (key: string) => setExpanded(p => ({ ...p, [key]: !p[key] }));
@@ -145,6 +146,22 @@ export function DailyLogView({ appData, updateAppData }: Props) {
           {expanded.study && (
             <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
               <StudyModule appData={appData} updateAppData={updateAppData} selectedDate={dateStr} />
+            </div>
+          )}
+        </div>
+
+        {/* Module X: Friction (new) */}
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-lg">
+          <button onClick={() => toggle('friction')} className="w-full flex items-center justify-between p-5 bg-slate-800 hover:bg-slate-750 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-600/20 text-red-400 rounded-lg"><AlertTriangle className="w-5 h-5" /></div>
+              <h3 className="text-lg font-bold text-white">Friction</h3>
+            </div>
+            <span className="text-slate-500 text-sm font-medium">{expanded.friction ? 'Collapse' : 'Expand'}</span>
+          </button>
+          {expanded.friction && (
+            <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
+              <FrictionLog appData={appData} updateAppData={updateAppData} selectedDate={dateStr} />
             </div>
           )}
         </div>
