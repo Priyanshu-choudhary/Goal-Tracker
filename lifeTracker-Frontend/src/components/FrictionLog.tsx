@@ -55,7 +55,13 @@ export default function FrictionLog({ appData, updateAppData, selectedDate }: Pr
 
   const handleSave = () => {
     const patterns = Array.from(selectedPatterns);
-    const tags = Array.from(new Set(patterns.map(pid => FRICTION_PATTERNS.find(p => p.id === pid)?.tag).filter(Boolean)));
+    const tags = Array.from(
+      new Set(
+        patterns
+          .map(pid => FRICTION_PATTERNS.find(p => p.id === pid)?.tag)
+          .filter((tag): tag is string => Boolean(tag))
+      )
+    );
     saveFrictionLog(updateAppData as any, selectedDate, {
       patterns_fired: patterns,
       phone_in_bed: phoneInBed,
