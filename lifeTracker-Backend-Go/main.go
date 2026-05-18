@@ -82,6 +82,7 @@ var friendUsernames = []string{
 	"PranjaliJaiswal",
 	"aditishukla_16",
 	"jeetupal31",
+	"vinaykaushal87439",
 }
 
 type FriendResult struct {
