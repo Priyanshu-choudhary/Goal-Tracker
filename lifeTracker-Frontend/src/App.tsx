@@ -10,6 +10,7 @@ import { GoalsView } from './components/GoalsView';
 import { Todo } from './components/Todo';
 import { FinanceView } from './components/FinanceView';
 import { SettingsView } from './components/SettingsView';
+import { FriendsTracker } from './components/FriendsTracker';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -43,6 +44,8 @@ export default function App() {
         return <Analytics appData={appData} updateAppData={updateAppData} />;
       case 'finance':
         return <FinanceView appData={appData} updateAppData={updateAppData} />;
+      case 'friends':
+        return <FriendsTracker />;
       case 'settings':
         return <SettingsView appData={appData} updateAppData={updateAppData} />;
       default:

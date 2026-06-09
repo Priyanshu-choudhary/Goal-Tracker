@@ -287,7 +287,7 @@ export function FinanceAnalytics({ transactions }: FinanceAnalyticsProps) {
           </div>
         </div>
         <div className="h-72 px-2 pb-3">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={260}>
             <ComposedChart
               data={filteredData}
               margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
@@ -379,7 +379,7 @@ export function FinanceAnalytics({ transactions }: FinanceAnalyticsProps) {
             </h4>
           </div>
           <div className="h-52 px-2 pb-3">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={188}>
               <AreaChart
                 data={filteredData}
                 margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
@@ -440,7 +440,7 @@ export function FinanceAnalytics({ transactions }: FinanceAnalyticsProps) {
             </h4>
           </div>
           <div className="h-52 px-2 pb-3">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={188}>
               <BarChart
                 data={filteredData}
                 margin={{ top: 8, right: 12, left: 0, bottom: 0 }}

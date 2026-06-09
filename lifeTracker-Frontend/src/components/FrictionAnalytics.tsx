@@ -68,7 +68,7 @@ export default function FrictionAnalytics({ appData }: { appData: AppData }) {
       </div>
 
       <div style={{ height: 220 }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={220}>
           <BarChart data={last30Counts} layout="vertical" margin={{ top: 5, right: 10, left: 60, bottom: 5 }}>
             <XAxis type="number" />
             <YAxis dataKey="label" type="category" width={160} />

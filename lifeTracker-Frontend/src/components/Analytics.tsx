@@ -417,7 +417,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
             <span className="text-[10px] font-black text-slate-500 uppercase bg-slate-900 px-3 py-1 rounded-full border border-slate-700">All Time</span>
           </div>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={allTimeData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                 <XAxis dataKey="name" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
@@ -456,7 +456,7 @@ export function Analytics({ appData, updateAppData: _updateAppData }: Props) {
           </div>
           <div className="h-[300px] w-full">
             {studyData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={studyData} layout="vertical" margin={{ top: 5, right: 30, bottom: 5, left: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={true} vertical={false} />
                   <XAxis type="number" stroke="#64748b" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
